@@ -1709,7 +1709,7 @@ void Giant_ShowMain(int client, bool bForceMain=false)
 	DisplayMenu(hMenu, client, MENU_TIME_FOREVER);
 }
 
-public int MenuHandler_Main(Handle hMenu, MenuAction action, int client, int menu_item)
+public void MenuHandler_Main(Handle hMenu, MenuAction action, int client, int menu_item)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1756,7 +1756,7 @@ void Giant_ShowDesc(int client, int iIndex, bool bShowBackButton=true, int iGian
 	CloseHandle(hPanel);
 }
 
-public int PanelHandler_Desc(Handle hPanel, MenuAction action, int client, int menu_item)
+public void PanelHandler_Desc(Handle hPanel, MenuAction action, int client, int menu_item)
 {
 	if(action == MenuAction_Select)
 	{
