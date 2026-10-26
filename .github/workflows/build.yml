@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .build
-          key: sm-1.12.0-git7259-tf2items-e350812
+          key: sm-1.12.0-git7255-tf2items-e350812
 
       - name: Build
         run: ./scripts/build.sh
@@ -44,5 +44,5 @@ jobs:
             echo "Plugin unchanged, nothing to commit"
             exit 0
           fi
-          git commit -m "Compile plugin (${GITHUB_SHA::7}, SourceMod 1.12.0.7259) [skip ci]"
+          git commit -m "Compile plugin (${GITHUB_SHA::7}, SourceMod 1.12.0.7255) [skip ci]"
           git push

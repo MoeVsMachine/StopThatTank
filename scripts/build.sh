@@ -12,7 +12,7 @@
 set -euo pipefail
 
 SM_BRANCH="1.12"
-SM_VERSION="1.12.0-git7259"
+SM_VERSION="1.12.0-git7255"
 TF2ITEMS_COMMIT="e3508121c09f0d2a3d7721ce109d7727f32bd078"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
