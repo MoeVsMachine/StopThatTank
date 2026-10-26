@@ -485,12 +485,9 @@ stock void Giant_PrintDebugTemplate(int iIndex)
 	{
 		PrintToServer("=[SLOT %d]=====================================================", i);
 		PrintToServer(" itemdef: %d", g_nGiants[iIndex].g_iGiantWeaponDefs[i]);
-		switch(i)
-		{
-			case 0: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantPrimaryClassname);
-			case 1: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantSecondaryClassname);
-			case 2: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantMeleeClassname);
-		}
+		char strClassname[MAXLEN_GIANT_STRING];
+		GetArrayString(g_nGiants[iIndex].g_hGiantClassnames, i, strClassname, sizeof(strClassname));
+		PrintToServer(" classname: %s", strClassname);
 		PrintToServer("=[SLOT %d ATTRIBUTES]=========================================", i);
 		for(int a=0; a<GetArraySize(g_nGiants[iIndex].g_hGiantWeaponAttrib[i]); a++)
 		{
