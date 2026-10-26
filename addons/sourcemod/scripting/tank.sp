@@ -6598,6 +6598,17 @@ void SDK_DoQuickBuild(int iBaseObject)
 }
 
 
+stock int TF2_GetEquippedItemInSlot(int client, int iSlot)
+{
+	int iWeapon = GetPlayerWeaponSlot(client, iSlot);
+	if(iWeapon > MaxClients) return iWeapon;
+
+	int iWearable = SDK_GetEquippedWearable(client, iSlot);
+	if(iWearable > MaxClients) return iWearable;
+
+	return -1;
+}
+
 int SDK_GetEquippedWearable(int client, int iSlot)
 {
 	if(g_hSDKGetEquippedWearable != INVALID_HANDLE)
@@ -7582,6 +7593,25 @@ float Path_GetDistance(int iPathStart, int iPathEnd)
 	return flDistance;
 }
 
+
+stock float Train_DistanceToGoal()
+{
+	// Straight line from the BLU cart to the goal. Superseded by
+	// Train_RealDistanceToGoal(team), which follows the path_track chain.
+	int iPathGoal = EntRefToEntIndex(g_iRefPathGoal[TFTeam_Blue]);
+	int iTrackTrain = EntRefToEntIndex(g_iRefTrackTrain[TFTeam_Blue]);
+	if(iPathGoal > MaxClients && iTrackTrain > MaxClients)
+	{
+		float flPosTrain[3];
+		float flPosGoal[3];
+		GetEntPropVector(iTrackTrain, Prop_Send, "m_vecOrigin", flPosTrain);
+		GetEntPropVector(iPathGoal, Prop_Send, "m_vecOrigin", flPosGoal);
+
+		return GetVectorDistance(flPosTrain, flPosGoal);
+	}
+
+	return 9999.0;
+}
 
 float Train_RealDistanceToGoal(int team)
 {
