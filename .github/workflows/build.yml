@@ -1,0 +1,29 @@
+name: Build plugin
+
+on:
+  push:
+    branches: [master, rebuild]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache compiler and includes
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: sm-1.12.0-git7259-tf2items-e350812
+
+      - name: Build
+        run: ./scripts/build.sh
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: tank-smx
+          path: build/tank.smx
+          if-no-files-found: error

@@ -3,3 +3,4 @@
 msvc*/
 build*/
 .vscode/
+.build/
