@@ -17,4 +17,6 @@ scripts/build.sh --install   # also copies it to addons/sourcemod/plugins/
 
 The script downloads the pinned SourceMod compiler and the pinned TF2Items include into `.build/`, then compiles `addons/sourcemod/scripting/tank.sp` with `spcomp64`. The pinned versions are at the top of the script, and the same script runs in GitHub Actions on every push and pull request, where the built `.smx` is uploaded as an artifact.
 
+On the `rebuild` branch, CI also commits the built plugin to `addons/sourcemod/plugins/tank.smx`, so that branch always ships a binary built from its own source. Those commits come from `github-actions[bot]` and carry `[skip ci]`.
+
 The native extension in `extension/` is a separate AMBuild project built against Metamod:Source. `scripts/build.sh` does not build it.
