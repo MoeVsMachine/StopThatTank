@@ -14671,7 +14671,7 @@ void UTIL_ScreenShake(float center[3], float amplitude, float frequency, float d
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i))
 		{
-			if(!airShake && command == Shake_Start && !(GetEntityFlags(i) && FL_ONGROUND)) continue;
+			if(!airShake && command == Shake_Start && !(GetEntityFlags(i) & FL_ONGROUND)) continue;
 
 			float playerPos[3];
 			GetClientAbsOrigin(i, playerPos);
