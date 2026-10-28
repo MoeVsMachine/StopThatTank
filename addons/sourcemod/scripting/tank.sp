@@ -42,7 +42,7 @@
 // Enable this for diagnostic messages in server console (very verbose)
 //#define DEBUG
 
-#define PLUGIN_VERSION 					"1.6.1"
+#define PLUGIN_VERSION 					"1.6.2"
 
 #define MODEL_TANK 					"models/bots/boss_bot/boss_tank.mdl"			// Model of the normal tank boss
 #define MODEL_TRACK_L				"models/bots/boss_bot/tank_track_L.mdl"			// Model of the left tank track
@@ -1870,10 +1870,10 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	g_lastClientTick[client] = GetEngineTime();
 
-	// IsClientInGame stays true while a disconnecting client's edict is already gone,
-	// so the condition checks below can throw on an invalid entity. IsClientConnected
-	// flips false earlier and closes that window.
-	if(client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
+	// A disconnecting client can still report connected and in-game while its edict is
+	// already gone, so the condition checks below could call GetEntProp on an invalid
+	// entity. IsValidEntity reads the edict state directly and closes that window.
+	if(client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && IsValidEntity(client))
 	{
 		if(IsPlayerAlive(client))
 		{
