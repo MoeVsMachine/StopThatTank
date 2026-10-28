@@ -42,7 +42,7 @@
 // Enable this for diagnostic messages in server console (very verbose)
 //#define DEBUG
 
-#define PLUGIN_VERSION 					"1.6.2"
+#define PLUGIN_VERSION 					"1.6.3"
 
 #define MODEL_TANK 					"models/bots/boss_bot/boss_tank.mdl"			// Model of the normal tank boss
 #define MODEL_TRACK_L				"models/bots/boss_bot/tank_track_L.mdl"			// Model of the left tank track
@@ -2110,7 +2110,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				if(Spawner_HasGiantTag(client, GIANTTAG_CAN_DROP_BOMB) && class == TFClass_Spy)
 				{
 					float value;
-					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+					if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
 						if(!Tank_GetAttributeValue(client, ATTRIB_MAJOR_MOVE_SPEED_BONUS, value) || !Float_AlmostEqual(value, config.LookupFloat(g_hCvarSuperSpyMoveSpeed)))
 						{
@@ -2132,7 +2132,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				// Increase the scale of the Giant's hands while un-disguised.
 				if(Spawner_HasGiantTag(client, GIANTTAG_THE_DONALD))
 				{
-					if(TF2_IsPlayerInCondition(client, TFCond_Disguised))
+					if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Disguised))
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flHandScale", 1.0);
 					}else{
@@ -2141,7 +2141,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				}
 
 				// Block the giant from being spooked by the HHH.
-				if(TF2_IsPlayerInCondition(client, TFCond_Dazed) && config.LookupBool(g_hCvarGiantHHHBlockStun))
+				if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Dazed) && config.LookupBool(g_hCvarGiantHHHBlockStun))
 				{
 					// The stun flags for the HHH scare: 192 (TF_STUNFLAGS_GHOSTSCARE)
 					// The stun flags for a regular ghost scare: 193 (TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_SLOWDOWN)
