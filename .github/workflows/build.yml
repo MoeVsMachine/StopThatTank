@@ -1,0 +1,48 @@
+name: Build plugin
+
+on:
+  push:
+    branches: [master, rebuild]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache compiler and includes
+        uses: actions/cache@v4
+        with:
+          path: .build
+          key: sm-1.12.0-git7255-tf2items-e350812
+
+      - name: Build
+        run: ./scripts/build.sh
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: tank-smx
+          path: build/tank.smx
+          if-no-files-found: error
+
+      # Only the rebuild branch carries the built plugin, and only on a real
+      # push. The bot's own commit is skipped so this cannot loop.
+      - name: Commit plugin
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/rebuild' && github.actor != 'github-actions[bot]'
+        run: |
+          cp build/tank.smx addons/sourcemod/plugins/tank.smx
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add addons/sourcemod/plugins/tank.smx
+          if git diff --cached --quiet; then
+            echo "Plugin unchanged, nothing to commit"
+            exit 0
+          fi
+          git commit -m "Compile plugin (${GITHUB_SHA::7}, SourceMod 1.12.0.7255) [skip ci]"
+          git push

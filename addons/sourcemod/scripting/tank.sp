@@ -42,7 +42,7 @@
 // Enable this for diagnostic messages in server console (very verbose)
 //#define DEBUG
 
-#define PLUGIN_VERSION 				"1.6.0"
+#define PLUGIN_VERSION 					"1.6.3"
 
 #define MODEL_TANK 					"models/bots/boss_bot/boss_tank.mdl"			// Model of the normal tank boss
 #define MODEL_TRACK_L				"models/bots/boss_bot/tank_track_L.mdl"			// Model of the left tank track
@@ -186,16 +186,6 @@
 #define	EF_PARENT_ANIMATES		0x200	// always assume that the parent entity is animating
 #define	EF_MAX_BITS = 10
 
-#define FL_EDICT_CHANGED	(1<<0)	// Game DLL sets this when the entity state changes
-									// Mutually exclusive with FL_EDICT_PARTIAL_CHANGE.
-									
-#define FL_EDICT_FREE		(1<<1)	// this edict if free for reuse
-#define FL_EDICT_FULL		(1<<2)	// this is a full server entity
-
-#define FL_EDICT_FULLCHECK	(0<<0)  // call ShouldTransmit() each time, this is a fake flag
-#define FL_EDICT_ALWAYS		(1<<3)	// always transmit this entity
-#define FL_EDICT_DONTSEND	(1<<4)	// don't transmit this entity
-#define FL_EDICT_PVSCHECK	(1<<5)	// always transmit entity, but cull against PVS
 
 // m_nSolidType
 #define SOLID_NONE 0 // no solid model
@@ -1880,7 +1870,10 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	g_lastClientTick[client] = GetEngineTime();
 
-	if(client >= 1 && client <= MaxClients && IsClientInGame(client))
+	// A disconnecting client can still report connected and in-game while its edict is
+	// already gone, so the condition checks below could call GetEntProp on an invalid
+	// entity. IsValidEntity reads the edict state directly and closes that window.
+	if(client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && IsValidEntity(client))
 	{
 		if(IsPlayerAlive(client))
 		{
@@ -2117,7 +2110,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				if(Spawner_HasGiantTag(client, GIANTTAG_CAN_DROP_BOMB) && class == TFClass_Spy)
 				{
 					float value;
-					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+					if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
 						if(!Tank_GetAttributeValue(client, ATTRIB_MAJOR_MOVE_SPEED_BONUS, value) || !Float_AlmostEqual(value, config.LookupFloat(g_hCvarSuperSpyMoveSpeed)))
 						{
@@ -2139,7 +2132,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				// Increase the scale of the Giant's hands while un-disguised.
 				if(Spawner_HasGiantTag(client, GIANTTAG_THE_DONALD))
 				{
-					if(TF2_IsPlayerInCondition(client, TFCond_Disguised))
+					if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Disguised))
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flHandScale", 1.0);
 					}else{
@@ -2148,7 +2141,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				}
 
 				// Block the giant from being spooked by the HHH.
-				if(TF2_IsPlayerInCondition(client, TFCond_Dazed) && config.LookupBool(g_hCvarGiantHHHBlockStun))
+				if(IsValidEntity(client) && TF2_IsPlayerInCondition(client, TFCond_Dazed) && config.LookupBool(g_hCvarGiantHHHBlockStun))
 				{
 					// The stun flags for the HHH scare: 192 (TF_STUNFLAGS_GHOSTSCARE)
 					// The stun flags for a regular ghost scare: 193 (TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_SLOWDOWN)
@@ -6607,14 +6600,15 @@ void SDK_DoQuickBuild(int iBaseObject)
 	}
 }
 
+
 stock int TF2_GetEquippedItemInSlot(int client, int iSlot)
 {
-	new iWeapon = GetPlayerWeaponSlot(client, iSlot);
+	int iWeapon = GetPlayerWeaponSlot(client, iSlot);
 	if(iWeapon > MaxClients) return iWeapon;
-	
-	new iWearable = SDK_GetEquippedWearable(client, iSlot);
+
+	int iWearable = SDK_GetEquippedWearable(client, iSlot);
 	if(iWearable > MaxClients) return iWearable;
-	
+
 	return -1;
 }
 
@@ -7602,21 +7596,23 @@ float Path_GetDistance(int iPathStart, int iPathEnd)
 	return flDistance;
 }
 
+
 stock float Train_DistanceToGoal()
 {
-	// Gets the distance in a straight line from the cart to the goal
-	int iPathGoal = EntRefToEntIndex(g_iRefPathGoalBlue);
-	int iTrackTrain = EntRefToEntIndex(g_iRefTrackTrainBlue);
+	// Straight line from the BLU cart to the goal. Superseded by
+	// Train_RealDistanceToGoal(team), which follows the path_track chain.
+	int iPathGoal = EntRefToEntIndex(g_iRefPathGoal[TFTeam_Blue]);
+	int iTrackTrain = EntRefToEntIndex(g_iRefTrackTrain[TFTeam_Blue]);
 	if(iPathGoal > MaxClients && iTrackTrain > MaxClients)
-	{	
+	{
 		float flPosTrain[3];
 		float flPosGoal[3];
 		GetEntPropVector(iTrackTrain, Prop_Send, "m_vecOrigin", flPosTrain);
 		GetEntPropVector(iPathGoal, Prop_Send, "m_vecOrigin", flPosGoal);
-		
+
 		return GetVectorDistance(flPosTrain, flPosGoal);
 	}
-	
+
 	return 9999.0;
 }
 
@@ -8468,6 +8464,8 @@ public Action Timer_TankTeleportFinale(Handle hTimer, int team)
 	{
 		TeleportEntity(iTank, g_flTankTempPos[team], g_flTankTempAng[team], NULL_VECTOR);
 	}
+
+	return Plugin_Continue;
 }
 
 public Action CritCash_OnTouch(int entity, int client)
@@ -11405,7 +11403,7 @@ public Action Command_Updates(int client, int args)
 	return Plugin_Handled;
 }
 
-public int PanelHandler(Handle hPanel, MenuAction action, int client, int menu_item)
+public void PanelHandler(Handle hPanel, MenuAction action, int client, int menu_item)
 {
 	return;
 }
@@ -13437,10 +13435,6 @@ int CaptureTriggers_Create(int team, int index)
 		iHudParity = (iHudParity + 1) & CAPHUD_PARITY_MASK;
 		SetEntProp(iObjective, Prop_Send, "m_iUpdateCapHudParity", iHudParity);
 
-		// Control point sounds are disabled on most payload maps
-		int iFlags = GetEntProp(iControlPoint, Prop_Data, "m_spawnflags");
-		iFlags &= ~SF_DISABLE_SOUNDS;
-		//SetEntProp(iControlPoint, Prop_Data, "m_spawnflags", iFlags);
 		SetEntProp(iControlPoint, Prop_Data, "m_iWarnOnCap", 0); // Susposed to enable announcer warning lines but doesn't seem to have an effect
 
 		SDKHook(iTrigger, SDKHook_StartTouch, CaptureTriggers_StartTouch);
@@ -14138,7 +14132,7 @@ void Settings_MainMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public int MenuHandler_SettingsMain(Menu menu, MenuAction action, int client, int menu_item)
+public void MenuHandler_SettingsMain(Menu menu, MenuAction action, int client, int menu_item)
 {
 	if(action == MenuAction_Select)
 	{
@@ -14710,7 +14704,7 @@ void UTIL_ScreenShake(float center[3], float amplitude, float frequency, float d
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i))
 		{
-			if(!airShake && command == Shake_Start && !(GetEntityFlags(i) && FL_ONGROUND)) continue;
+			if(!airShake && command == Shake_Start && !(GetEntityFlags(i) & FL_ONGROUND)) continue;
 
 			float playerPos[3];
 			GetClientAbsOrigin(i, playerPos);

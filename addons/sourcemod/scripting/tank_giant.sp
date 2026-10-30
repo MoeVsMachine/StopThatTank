@@ -485,12 +485,9 @@ stock void Giant_PrintDebugTemplate(int iIndex)
 	{
 		PrintToServer("=[SLOT %d]=====================================================", i);
 		PrintToServer(" itemdef: %d", g_nGiants[iIndex].g_iGiantWeaponDefs[i]);
-		switch(i)
-		{
-			case 0: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantPrimaryClassname);
-			case 1: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantSecondaryClassname);
-			case 2: PrintToServer(" classname: %s", g_nGiants[iIndex].g_strGiantMeleeClassname);
-		}
+		char strClassname[MAXLEN_GIANT_STRING];
+		GetArrayString(g_nGiants[iIndex].g_hGiantClassnames, i, strClassname, sizeof(strClassname));
+		PrintToServer(" classname: %s", strClassname);
 		PrintToServer("=[SLOT %d ATTRIBUTES]=========================================", i);
 		for(int a=0; a<GetArraySize(g_nGiants[iIndex].g_hGiantWeaponAttrib[i]); a++)
 		{
@@ -1712,7 +1709,7 @@ void Giant_ShowMain(int client, bool bForceMain=false)
 	DisplayMenu(hMenu, client, MENU_TIME_FOREVER);
 }
 
-public int MenuHandler_Main(Handle hMenu, MenuAction action, int client, int menu_item)
+public void MenuHandler_Main(Handle hMenu, MenuAction action, int client, int menu_item)
 {
 	if(action == MenuAction_Select)
 	{
@@ -1759,7 +1756,7 @@ void Giant_ShowDesc(int client, int iIndex, bool bShowBackButton=true, int iGian
 	CloseHandle(hPanel);
 }
 
-public int PanelHandler_Desc(Handle hPanel, MenuAction action, int client, int menu_item)
+public void PanelHandler_Desc(Handle hPanel, MenuAction action, int client, int menu_item)
 {
 	if(action == MenuAction_Select)
 	{

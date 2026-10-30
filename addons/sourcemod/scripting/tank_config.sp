@@ -118,7 +118,9 @@ methodmap CustomProps < ArrayList
 			}
 		}
 
-		this.Clear();
+		// this.Clear() would resolve to this override and recurse until the
+		// stack is gone, so call the ArrayList method explicitly.
+		view_as<ArrayList>(this).Clear();
 	}
 };
 CustomProps g_customProps = null;
