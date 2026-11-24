@@ -11,6 +11,9 @@
 #define REG_ECX			1
 #define REG_EDX			2
 #define REG_EBX			3
+#define REG_EBP			5
+#define REG_ESI			6
+#define REG_EDI			7
 
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
 #endif
@@ -58,6 +61,21 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 		case 0x14:
 			{
 				movByte += REG_EDX;
+				break;
+			}
+		case 0x2C:
+			{
+				movByte += REG_EBP;
+				break;
+			}
+		case 0x34:
+			{
+				movByte += REG_ESI;
+				break;
+			}
+		case 0x3C:
+			{
+				movByte += REG_EDI;
 				break;
 			}
 		default:

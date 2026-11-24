@@ -164,12 +164,12 @@ class ExtensionConfig(object):
       '_vsnprintf=vsnprintf',
       'HAVE_STDINT_H',
       'GNUC',
+      'LINUX',
     ]
     cxx.cflags += [
       '-pipe',
       '-fno-strict-aliasing',
       '-Wall',
-      '-Werror',
       '-Wno-unused',
       '-Wno-switch',
       '-Wno-array-bounds',
@@ -178,7 +178,7 @@ class ExtensionConfig(object):
       '-fvisibility=hidden',
     ]
     cxx.cxxflags += [
-      '-std=c++11',
+      '-std=c++17',
       '-fno-exceptions',
       '-fno-threadsafe-statics',
       '-Wno-non-virtual-dtor',
